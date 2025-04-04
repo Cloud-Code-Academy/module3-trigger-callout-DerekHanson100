@@ -3,8 +3,10 @@
  */
 public with sharing class NewsAPIService {
     // TODO: Define API endpoint constants
+    
     private static final String API_NAMED_CREDENTIAL = 'callout:NewsAPI'; //https://newsapi.org
     private static final String API_ENDPOINT = '/v2/top-headlines';
+    //String endpoint = API_NAMED_CREDENTIAL + API_ENDPOINT;
     
     // TODO: Define default parameters
     private static final Integer DEFAULT_PAGE_SIZE = 20; 
@@ -22,8 +24,30 @@ public with sharing class NewsAPIService {
         // - Build the request URL
         // - Make the callout
         // - Parse and return the response
-        
-        return null;
+        if (pageSize == null) pageSize = DEFAULT_PAGE_SIZE;
+        if (page == null) page = 1;
+
+        try{
+            String queryParams = '?category=' + category + '&pageSize=' + pageSize + '&page=' + page;
+
+            String fullEndpoint = API_NAMED_CREDENTIAL + API_ENDPOINT + queryParams;
+            
+            HttpResponse res = makeCallout(fullEndpoint);
+
+            if (res.getStatusCode() != 200) {
+                throw new NewsAPIException('Failed to fetch headlines: ' + res.getStatusCode() + ' - ' + res.getBody());
+            }
+
+            NewsAPIResponse response = parseResponse(res.getBody());
+            //System.debug(response);
+            return response;
+            
+
+        } catch (Exception ex) {
+            System.debug('***NewsAPIService ERROR: ' + ex.getMessage());
+            throw new NewsAPIException('News API call failed: ' + ex.getMessage());
+        }
+
     }
     
     /**
@@ -36,8 +60,14 @@ public with sharing class NewsAPIService {
         // - Create and configure HTTP request
         // - Make the callout
         // - Handle exceptions
+        HttpRequest req = new HttpRequest();
+        req.setEndpoint(endpoint);
+        req.setMethod('GET');
         
-        return null;
+        Http http = new Http();
+        HttpResponse res = http.send(req);    
+        
+        return res;
     }
     
     /**
@@ -50,7 +80,7 @@ public with sharing class NewsAPIService {
         // - Deserialize JSON to NewsAPIResponse
         // - Handle exceptions
         
-        return null;
+        return (NewsAPIResponse) JSON.deserialize(jsonResponse, NewsAPIResponse.class);
     }
     
     /**
