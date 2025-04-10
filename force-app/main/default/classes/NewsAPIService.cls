@@ -9,7 +9,7 @@ public with sharing class NewsAPIService {
     //String endpoint = API_NAMED_CREDENTIAL + API_ENDPOINT;
     
     // TODO: Define default parameters
-    private static final Integer DEFAULT_PAGE_SIZE = 20; 
+    public static final Integer DEFAULT_PAGE_SIZE = 20; 
     
     /**
      * Fetches top headlines for a specified category with pagination support
@@ -29,9 +29,8 @@ public with sharing class NewsAPIService {
 
         try{
             String queryParams = '?category=' + category + '&pageSize=' + pageSize + '&page=' + page;
-
             String fullEndpoint = API_NAMED_CREDENTIAL + API_ENDPOINT + queryParams;
-            
+            System.debug('***Calling NewsAPI: ' + fullEndpoint);
             HttpResponse res = makeCallout(fullEndpoint);
 
             if (res.getStatusCode() != 200) {
@@ -39,7 +38,7 @@ public with sharing class NewsAPIService {
             }
 
             NewsAPIResponse response = parseResponse(res.getBody());
-            //System.debug(response);
+            System.debug('***API response parsed | status: ' + response.status + ', totalResults: ' + response.totalResults);
             return response;
             
 
